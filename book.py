@@ -1,8 +1,13 @@
 from flask import request,Flask,jsonify
 from pymongo.mongo_client import MongoClient
+from flask_basicauth import BasicAuth
 
 app = Flask(__name__) 
 uri = "mongodb+srv://mongo:mongo@cluster0.cgejftk.mongodb.net/?retryWrites=true&w=majority"
+
+app.config['BASIC_AUTH_USERNAME']='username'
+app.config['BASIC_AUTH_PASSWORD']='password'
+basic_auth = BasicAuth(app)
 
 client = MongoClient(uri)
 db = client["students"]
@@ -20,6 +25,7 @@ def Greet():
     return "<p>Welcome to Student Management API</p>"
 
 @app.route("/students",methods=["GET"])
+@basic_auth.required
 def get_all_books():
     all_students = collection.find()
     for std in all_students:
@@ -28,6 +34,7 @@ def get_all_books():
          
 
 @app.route("/books/<int:book_id>",methods=["GET"])
+@basic_auth.required
 def get_book(book_id):
     book =  next(( b for b in books if b["id"]==book_id ),None)
     if book:
