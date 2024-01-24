@@ -36,6 +36,7 @@ def get_all_stds():
 @app.route("/students/<int:std_id>",methods=["GET"])
 @basic_auth.required
 def get_std(std_id):
+    all_students = collection.find()
     for s in all_students:
         std_id = str(std_id)
         if std_id == s["_id"]:
@@ -93,7 +94,7 @@ def update_std(std_id):
 
 
 @app.route("/students/<int:std_id>",methods=["DELETE"])
-def delete_book(std_id):
+def delete_std(std_id):
     std_id = str(std_id)
     student = next((s for s in stds if s["_id"]==std_id),None)
     if student:
