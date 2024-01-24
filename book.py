@@ -22,6 +22,7 @@ stds=[]
 all_students = collection.find()
 for std in all_students:
     stds.append(std)
+
 @app.route("/")
 def Greet():
     return "<p>Welcome to Student Management API</p>"
@@ -45,47 +46,56 @@ def get_book(book_id):
 @basic_auth.required
 def create_std():
     data = request.get_json()
-    all_students = collection.find()
-    for s in all_students:
-        if data["_id"] == s["_id"]:
-            return jsonify({"error":"Cannot create new student"}),500
-        
-    collection.insert_one({
-        "_id":data["_id"],
-        "fullname":data["fullname"],
-        "major":data["major"],
-        "gpa":data["gpa"]
-    })
     new_std={
         "_id":data["_id"],
         "fullname":data["fullname"],
         "major":data["major"],
         "gpa":data["gpa"]
     }
+    for s in stds:
+        sd = str(new_std["_id"])
+        if sd == s["_id"]:
+            return jsonify({"error":"Cannot create new student"}),500
     stds.append(new_std)
-    return jsonify(new_std),201
+    collection.insert_one({
+        "_id":data["_id"],
+        "fullname":data["fullname"],
+        "major":data["major"],
+        "gpa":data["gpa"]
+    })
+    return jsonify(new_std),200
 
-@app.route("/books/<int:book_id>",methods=["PUT"])
-def update_book(book_id):
-    book = next((b for b in books if b["id"]==book_id),None)
-    if book:
+
+@app.route("/students/<int:std_id>",methods=["PUT"])
+def update_std(std_id):
+    std_id = str(std_id)
+    student = next((s for s in stds if s["_id"]==std_id),None)
+    if student:
         data = request.get_json()
-        book.update(data)
-        return jsonify(book)
+        student.update(data)
+        collection.update_many( {"_id":student["_id"]},
+                                {"$set":{"fullname":student["fullname"],
+                                        "major":student["major"],
+                                        "gpa":student["gpa"]
+                                        }
+                                })
+        return jsonify(student),200
     else:
-        return jsonify({"error":"Book not found"}),404
+        return jsonify({"error":"Student not found"}),404
 
 
 
 
-@app.route("/books/<int:book_id>",methods=["DELETE"])
-def delete_book(book_id):
-    book = next((b for b in books if b["id"]==book_id),None)
-    if book:
-        books.remove(book)
-        return jsonify({"message":"Book deleted successfully"}),200
+@app.route("/students/<int:std_id>",methods=["DELETE"])
+def delete_std(std_id):
+    std_id = str(std_id)
+    student = next((s for s in stds if s["_id"]==std_id),None)
+    if student:
+        stds.remove(student)
+        collection.delete_one({"_id":std_id})
+        return jsonify({"message":"Student deleted successfully"}),200
     else:
-        return jsonify({"error":"Book not found"}),404
+        return jsonify({"error":"Student not found"}),404
     
 
 
