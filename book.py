@@ -75,9 +75,7 @@ def create_std():
 
 @app.route("/students/<int:std_id>",methods=["PUT"])
 def update_book(std_id):
-    all_students = collection.find()
-    for s in all_students:
-        std_id = str(std_id)
+    std_id = str(std_id)
     student = next((s for s in stds if s["_id"]==std_id),None)
     if student:
         data = request.get_json()
