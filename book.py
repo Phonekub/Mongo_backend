@@ -26,7 +26,7 @@ def Greet():
 
 @app.route("/students",methods=["GET"])
 @basic_auth.required
-def get_all_books():
+def get_all_stds():
     all_students = collection.find()
     for std in all_students:
         stds.append(std)
@@ -35,30 +35,31 @@ def get_all_books():
 
 @app.route("/students/<int:std_id>",methods=["GET"])
 @basic_auth.required
-def get_book(std_id):
-    all_students = collection.find()
-    for s in all_students:
-        std_id = str(std_id)
-        if std_id == s["_id"]:
-            student =s
-            break
-        else:
-            student=None
-    if student:
-        return jsonify(student)
+def get_book(book_id):
+    book =  next(( b for b in books if b["id"]==book_id ),None)
+    if book:
+        return jsonify(book)
     else:
         return jsonify({"error":"Student not found"}),404
 
-@app.route("/books",methods=["POST"])
-def create_book():
+@app.route("/students",methods=["POST"])
+@basic_auth.required
+def create_std():
     data = request.get_json()
-    new_book={
-        "id":len(books)+1,
-        "title":data["title"],
-        "author":data["author"]
+    collection.insert_one({
+        "_id":data["_id"],
+        "fullname":data["fullname"],
+        "major":data["major"],
+        "gpa":data["gpa"]
+    })
+    new_std={
+        "_id":data["_id"],
+        "fullname":data["fullname"],
+        "major":data["major"],
+        "gpa":data["gpa"]
     }
-    books.append(new_book)
-    return jsonify(new_book),201
+    stds.append(new_std)
+    return jsonify(new_std),201
 
 @app.route("/books/<int:book_id>",methods=["PUT"])
 def update_book(book_id):
