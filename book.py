@@ -19,7 +19,9 @@ books=[
     {"id":3,"title":"Book 3","author":"Author 3"}
 ]
 stds=[]
-
+all_students = collection.find()
+for std in all_students:
+    stds.append(std)
 @app.route("/")
 def Greet():
     return "<p>Welcome to Student Management API</p>"
@@ -27,9 +29,6 @@ def Greet():
 @app.route("/students",methods=["GET"])
 @basic_auth.required
 def get_all_stds():
-    all_students = collection.find()
-    for std in all_students:
-        stds.append(std)
     return jsonify({"students":stds})
          
 
@@ -53,6 +52,11 @@ def get_std(std_id):
 @basic_auth.required
 def create_std():
     data = request.get_json()
+    all_students = collection.find()
+    for s in all_students:
+        if data["_id"] == s["_id"]:
+            return jsonify({"error":"Cannot create new student"}),500
+        
     collection.insert_one({
         "_id":data["_id"],
         "fullname":data["fullname"],
